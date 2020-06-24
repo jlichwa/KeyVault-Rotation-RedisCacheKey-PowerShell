@@ -1,2 +1,3 @@
-# KeyVault-Rotation-StorageAccountKey-PowerShell
-Key Vault Storage Account Key Rotation
+# KeyVault-Rotation-RedisCacheKey-PowerShell
+Key Vault Redis Cache Key Rotation
+
