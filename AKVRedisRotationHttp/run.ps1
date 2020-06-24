@@ -8,10 +8,19 @@ function RegenerateKey($keyId, $providerAddress){
     
     $redisName = ($providerAddress -split '/')[8]
     $resourceGroupName = ($providerAddress -split '/')[4]
+    $subscriptionId = ($providerAddress -split '/')[2]
     
     #Regenerate key 
-    $newKeyValue = (New-AzRedisCacheKey -Name $redisName -ResourceGroupName myGroup -KeyType $keyId -Force|where KeyName -eq $keyId).value
+    #$newKeyValue = (New-AzRedisCacheKey -Name $redisName -ResourceGroupName myGroup -KeyType $keyId -Force|where KeyName -eq $keyId).value
+    $tokenAuthURI = $env:MSI_ENDPOINT + "?resource=https://management.azure.com/&api-version=2017-09-01"
+    $tokenResponse = Invoke-RestMethod -Method Get -Headers @{"Secret"="$env:MSI_SECRET"} -Uri $tokenAuthURI
+    $accessToken = $tokenResponse.access_token
+    
+    $uri = "https://management.azure.com/subscriptions/$subscriptionId/resourceGroups/$resourceGroupName/providers/Microsoft.Cache/Redis/$redisName/regenerateKey?api-version=2018-03-01"
+    $postParams = @{"keyType"=$keyId}
+    Invoke-WebRequest -Uri $uri -Method Post -Headers @{Authorization ="Bearer $accessToken"} -Body $postParams
 
+    $newKeyValue = (Get-AzRedisCacheKey -ResourceGroupName $resourceGroupName -Name $redisName)."$($keyId)Key"
     return $newKeyValue
 }
 
