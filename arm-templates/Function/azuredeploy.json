@@ -1,8 +1,8 @@
 {
-    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "storageAccountName": {
+        "redisName": {
             "defaultValue": "akvrotationstorage",
             "type": "String"
         },
@@ -25,7 +25,7 @@
             }
         },
         "repoURL": {
-            "defaultValue": "https://github.com/jlichwa/KeyVault-Rotation-StorageAccountKey-PowerShell.git",
+            "defaultValue": "https://github.com/jlichwa/KeyVault-Rotation-RedisKey-PowerShell.git",
             "type": "String",
             "metadata": {
                 "description": "The URL for the GitHub repository that contains the project to deploy."
@@ -167,14 +167,14 @@
             }
 		},
 		{
-            "type": "Microsoft.Storage/storageAccounts/providers/roleAssignments",
+            "type": "Microsoft.Cache/Redis/providers/roleAssignments",
             "apiVersion": "2018-09-01-preview",
-            "name": "[concat(parameters('storageAccountName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('storageAccountName'))))]",
+            "name": "[concat(parameters('redisName'), '/Microsoft.Authorization/', guid(uniqueString(parameters('redisName'))))]",
             "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', parameters('functionAppName'))]"
             ],
             "properties": {
-                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', '81a9662b-bebf-436f-a333-f67b29880f12')]",
+                "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'e0f68234-74aa-48ed-b826-c38b57376e17')]",
                 "principalId": "[reference(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'2019-08-01', 'Full').identity.principalId]"
             }
 		},
@@ -192,7 +192,7 @@
                     "properties": {
                         "maxEventsPerBatch": 1,
                         "preferredBatchSizeInKilobytes": 64,
-                        "resourceId": "[concat(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'/functions/AKVStorageRotation')]"
+                        "resourceId": "[concat(resourceId('Microsoft.Web/sites', parameters('functionAppName')),'/functions/AKVRedisRotation')]"
                     }
                 },
                 "filter": {

@@ -1,5 +1,5 @@
 {  
-	"$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"$schema":"https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
 	"contentVersion":"1.0.0.0",
 	"parameters":{  
 	   "ResourceNamePrefix":{  
@@ -11,7 +11,7 @@
 	   }
 	},
 	"variables":{  
-	   "storageaccountid":"[concat(resourceGroup().id,'/providers/','Microsoft.Storage/storageAccounts/', parameters('ResourceNamePrefix'),'strg')]"
+		"redisDiagStorageAccountName": "[concat(uniquestring(resourceGroup().id), 'diag')]"
 	},
 	"resources":[  
 	  
@@ -38,7 +38,7 @@
 	   {
 		"type": "Microsoft.Storage/storageAccounts",
 		"apiVersion": "2019-06-01",
-		"name": "[concat(parameters('ResourceNamePrefix'),'storage')]",
+		"name": "[variables('redisDiagStorageAccountName')]",
 		"location": "[resourceGroup().location]",
 		"sku": {
 			"name": "Standard_LRS",
@@ -47,15 +47,80 @@
 		"kind": "Storage"
 	  },
 	  {
-		"type": "Microsoft.Storage/storageAccounts",
-		"apiVersion": "2019-06-01",
-		"name": "[concat(parameters('ResourceNamePrefix'),'storage2')]",
+		"apiVersion": "2015-08-01",
+		"name": "[concat(parameters('ResourceNamePrefix'),'redis')]",
+		"type": "Microsoft.Cache/Redis",
 		"location": "[resourceGroup().location]",
-		"sku": {
-			"name": "Standard_LRS",
-			"tier": "Standard"
+		"properties": {
+		  "enableNonSslPort": "false",
+		  "sku": {
+			"capacity": "1",
+			"family": "C",
+			"name": "Standard"
+		  }
 		},
-		"kind": "Storage"
+		"resources": [
+		  {
+			"apiVersion": "2017-05-01-preview",
+			"type": "Microsoft.Cache/redis/providers/diagnosticsettings",
+			"name": "[concat(parameters('ResourceNamePrefix'),'redis', '/Microsoft.Insights/', parameters('ResourceNamePrefix'),'redis')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+			  "[concat('Microsoft.Cache/Redis/', parameters('ResourceNamePrefix'),'redis')]"
+			],
+			"properties": {
+			  "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('redisDiagStorageAccountName'))]",
+			  "metrics": [
+				{
+				  "timeGrain": "AllMetrics",
+				  "enabled": "false",
+				  "retentionPolicy": {
+					"days": 90,
+					"enabled": "false"
+				  }
+				}
+			  ]
+			}
+		  }
+		]
+	  },
+	  {
+		"apiVersion": "2015-08-01",
+		"name": "[concat(parameters('ResourceNamePrefix'),'redis2')]",
+		"type": "Microsoft.Cache/Redis",
+		"location": "[resourceGroup().location]",
+		"properties": {
+		  "enableNonSslPort": "false",
+		  "sku": {
+			"capacity": "1",
+			"family": "C",
+			"name": "Standard"
+		  }
+		},
+		"resources": [
+		  {
+			"apiVersion": "2017-05-01-preview",
+			"type": "Microsoft.Cache/redis/providers/diagnosticsettings",
+			"name": "[concat(parameters('ResourceNamePrefix'),'redis2', '/Microsoft.Insights/', parameters('ResourceNamePrefix'),'redis2')]",
+			"location": "[resourceGroup().location]",
+			"dependsOn": [
+			  "[concat('Microsoft.Cache/Redis/', parameters('ResourceNamePrefix'),'redis2')]"
+			],
+			"properties": {
+			  "storageAccountId": "[resourceId('Microsoft.Storage/storageAccounts', variables('redisDiagStorageAccountName'))]",
+			  "metrics": [
+				{
+				  "timeGrain": "AllMetrics",
+				  "enabled": "false",
+				  "retentionPolicy": {
+					"days": 90,
+					"enabled": "false"
+				  }
+				}
+			  ]
+			}
+		  }
+		]
 	  }
 	]
   }
