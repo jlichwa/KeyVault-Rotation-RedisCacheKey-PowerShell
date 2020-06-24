@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "redisName": {
-            "defaultValue": "akvrotationstorage",
+            "defaultValue": "akvrotationredis",
             "type": "String"
         },
         "keyVaultName": {
@@ -18,10 +18,10 @@
             }
 		},
 		"secretName": {
-            "defaultValue": "storageKey",
+            "defaultValue": "redisKey",
             "type": "String",
             "metadata": {
-                "description": "The name of the secret where storage account keys are stored."
+                "description": "The name of the secret where redis keys are stored."
             }
         },
         "repoURL": {

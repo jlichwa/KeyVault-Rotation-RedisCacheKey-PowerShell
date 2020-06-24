@@ -6,13 +6,11 @@ param($Request, $TriggerMetadata)
 function RegenerateKey($keyId, $providerAddress){
     Write-Host "Regenerating key. Id: $keyId Resource Id: $providerAddress"
     
-    $storageAccountName = ($providerAddress -split '/')[8]
+    $redisName = ($providerAddress -split '/')[8]
     $resourceGroupName = ($providerAddress -split '/')[4]
     
     #Regenerate key 
-    New-AzStorageAccountKey -ResourceGroupName $resourceGroupName -Name $storageAccountName -KeyName $keyId
-    $newKeyValue = (Get-AzStorageAccountKey -ResourceGroupName $resourceGroupName -AccountName $storageAccountName|where KeyName -eq $keyId).value
-
+    $newKeyValue = (New-AzRedisCacheKey -Name $redisName -ResourceGroupName myGroup -KeyType $keyId -Force|where KeyName -eq $keyId).value
 
     return $newKeyValue
 }
@@ -25,16 +23,16 @@ function AddSecretToKeyVault($keyVAultName,$secretName,$newAccessKeyValue,$expri
 }
 
 function GetAlternateCredentialId($keyId){
-    $validCredentialIdsRegEx = 'key[1-2]'
+    $validCredentialIdsRegEx = 'Primary|Secondary'
     
     If($keyId -NotMatch $validCredentialIdsRegEx){
         throw "Invalid credential id: $keyId. Credential id must follow this pattern:$validCredentialIdsRegEx"
     }
-    If($keyId -eq 'key1'){
-        return "key2"
+    If($keyId -eq 'Primary'){
+        return "Secondary"
     }
     Else{
-        return "key1"
+        return "Primary"
     }
 }
 
