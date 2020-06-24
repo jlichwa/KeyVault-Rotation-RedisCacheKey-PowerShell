@@ -5,7 +5,7 @@ Functions regenerate individual key (alternating Primary and Secondary) in Redis
 
 Functions require following information stored in secret as tags:
 - $secret.Tags["ValidityPeriodDays"] - number of days, it defines expiration date for new secret
-- $secret.Tags["CredentialId"] - key id (key1 or key2)
+- $secret.Tags["CredentialId"] - key id (Primary|Secondary)
 - $secret.Tags["ProviderAddress"] - Redis Cache Resource Id
 
 You can create new secret with above tags and Redis Cache key as value or add those tags to existing secret. For automated rotation expiry date would also be required - it triggers event 30 days before expiry
